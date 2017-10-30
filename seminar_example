@@ -1,0 +1,69 @@
+# Create and change the directory (see 5.4. Files and directories):
+
+mkdir -p ~/seminar/task
+cd ~/seminar/task
+
+# To obtain direct link: mouse right-click on the file -> "copy link" in the drop-down menu
+# Download the archived vcf-file (see 5.10. Networking; 5.4. Files and directories):
+
+wget ftp://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar_20171002.vcf.gz
+ls -l
+
+# 12680338 bytes 
+# And decompress it (see 5.9. Archives; 5.4. Files and directories): 
+
+gunzip clinvar_20171002.vcf.gz 
+ls -l
+
+# 125504260 bytes, 10 times more than compressed
+# Look inside (see 5.4. Files and directories):
+
+less clinvar_20171002.vcf.gz
+
+# A tab-separated file with a header and a set of first info-lines, metadata.
+# About VCF: https://en.wikipedia.org/wiki/Variant_Call_Format
+# Count header&info rows and content rows (see 5.8. grep, sed, cut, awk; 5.7. Regular Expressions): 
+
+grep -c "^#" clinvar_20171002.vcf 
+grep -vc "^#" clinvar_20171002.vcf 
+
+# Save metadata to a new file (vcf_header), the corresponding rows start with "##":
+
+grep "^##" clinvar_20171002.vcf > vcf_header
+
+# Remove metadata rows from clinvar_20171002.vcf:
+
+sed -i -e "/^##/d" clinvar_20171002.vcf
+
+# 'CHROM', 'POS', 'REF' and 'ALT' columns are 1,2,4 and 5, respectivelly.
+# Extract them to a new file (vcf_cut) (see 5.8. grep, sed, cut, awk):
+
+cut -f 1-2,4-5 clinvar_20171002.vcf > vcf_cut
+
+# Let us concider only point mutations. 
+# Find the most mutable 'REF' nucleotide in 15 chromosome 
+# i.e. the most frequent nucleotide in 'REF' column, limited to 15 chromosome (see 5.5. Pipes and Redirection):
+
+grep "^15" vcf_cut | cut -f 3 | grep -w "[A-Z]" | sort | uniq -c | sort -rn | head -1
+
+# 1. Get all the rows, starting with "15" (see 5.8. grep, sed, cut, awk; 5.7. Regular Expressions)
+# 2. Extract 'REF' column (see 5.8. grep, sed, cut, awk)
+# 3. Select rows that contain one-letter "word" (see 5.8. grep, sed, cut, awk; 5.7. Regular Expressions)
+# 4. Sort them alphabetically (see 5.4. Files and directories)
+# 5. Merge consecutive equivalent rows, with counts (see 5.4. Files and directories)
+# 6. Sort numerically from the most frequent to the least (see 5.4. Files and directories)
+# 7. Pick the first line with the champion (see 5.4. Files and directories)
+
+# Find the most prevalent nucleotide pair 'REF'-'ALT' in 15 chromosome:
+
+grep "^15" vcf_cut | cut -f 3 | grep -v "[A-Z][A-Z]" | sort | uniq -c | sort -rn | head -1
+
+# 1. Get all the rows, starting with "15" (see 5.8. grep, sed, cut, awk; 5.7. Regular Expressions)
+# 2. Extract 'REF' and 'ALT' columns (see 5.8. grep, sed, cut, awk)
+# 3. Select rows that do not contain longer than two-letter substrings (get point mutations) (see 5.8. grep, sed, cut, awk; 5.7. Regular Expressions)
+# 4. Sort them alphabetically (see 5.4. Files and directories)
+# 5. Merge consecutive equivalent rows, with counts (see 5.4. Files and directories)
+# 6. Sort numerically from the most frequent to the least (see 5.4. Files and directories)
+# 7. Pick the first line with the champion (see 5.4. Files and directories)
+
+
